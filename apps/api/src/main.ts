@@ -7,6 +7,8 @@ import { focusRoutes } from './routes/focuses.js';
 import { taskRoutes } from './routes/tasks.js';
 import { assistantRoutes } from './routes/assistant.js';
 import { inviteRoutes } from './routes/invites.js';
+import { kpiRoutes } from './routes/kpis.js';
+import { notificationRoutes } from './routes/notifications.js';
 import { buildBot } from './bot/admin.js';
 import { logEvent } from './lib/events.js';
 
@@ -38,6 +40,8 @@ await focusRoutes(app);
 await inviteRoutes(app);
 await taskRoutes(app);
 await assistantRoutes(app);
+await kpiRoutes(app);
+await notificationRoutes(app);
 
 // basic error logging
 app.setErrorHandler(async (err, req: any, reply) => {
