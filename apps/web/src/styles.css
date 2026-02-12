@@ -1,0 +1,27 @@
+:root { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+body { margin: 0; background: #0b0c10; color: #e7e7e7; }
+* { box-sizing: border-box; }
+button, input, textarea { font: inherit; }
+
+.card { background: #11131a; border: 1px solid #1d2130; border-radius: 16px; padding: 14px; }
+.row { display: flex; gap: 10px; align-items: center; }
+.col { display: flex; flex-direction: column; gap: 10px; }
+
+.topbar { padding: 14px 16px; position: sticky; top: 0; background: rgba(11,12,16,0.85); backdrop-filter: blur(10px); border-bottom: 1px solid #1d2130; }
+.container { padding: 16px; max-width: 720px; margin: 0 auto; }
+
+.h1 { font-size: 18px; font-weight: 700; }
+.muted { color: #9aa3b2; font-size: 12px; }
+
+.list { display: flex; flex-direction: column; gap: 10px; }
+.item { display: flex; justify-content: space-between; gap: 10px; }
+
+.btn { background: #1b5cff; border: none; color: white; padding: 10px 12px; border-radius: 12px; cursor: pointer; }
+.btn.secondary { background: #1d2130; }
+.btn.danger { background: #ff3b3b; }
+
+.input { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid #1d2130; background: #0f1117; color: #e7e7e7; }
+
+.tabbar { display: flex; gap: 8px; }
+.tab { padding: 8px 10px; border-radius: 999px; background: #1d2130; color: #c7d0e0; cursor: pointer; border: 1px solid #2a3043; font-size: 12px; }
+.tab.active { background: #1b5cff; border-color: transparent; color: white; }
