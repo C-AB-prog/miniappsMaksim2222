@@ -42,15 +42,20 @@ await assistantRoutes(app);
 // basic error logging
 app.setErrorHandler(async (err, req: any, reply) => {
   app.log.error(err);
+
+  // ✅ FIX: err может быть unknown, поэтому message берём безопасно
+  const message = err instanceof Error ? err.message : String(err);
+
   try {
     await logEvent({
       event_name: 'error_api',
       user_id: req?.auth?.user?.id ?? null,
-      props: { route: req?.routeOptions?.url, message: err.message }
+      props: { route: req?.routeOptions?.url, message }
     });
   } catch {
     // ignore
   }
+
   reply.code(500).send({ ok: false, error: 'internal_error' });
 });
 

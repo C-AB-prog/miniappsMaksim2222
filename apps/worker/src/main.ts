@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Worker, Queue } from 'bullmq';
+import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { Telegraf } from 'telegraf';
 import { PrismaClient } from '@prisma/client';
@@ -17,9 +17,16 @@ export const NOTIFICATION_QUEUE = 'notifications';
 new Worker(
   NOTIFICATION_QUEUE,
   async (job) => {
-    const { tg_id, text, type, user_id, payload } = job.data as any;
+    const { tg_id, text, type, user_id } = job.data as any;
     try {
-      await bot.telegram.sendMessage(Number(tg_id), text, { disable_web_page_preview: true });
+      // ✅ FIX: Telegram Bot API теперь использует link_preview_options
+      // Telegraf типы могут ругаться — поэтому cast as any, но API реально работает.
+      await bot.telegram.sendMessage(
+        Number(tg_id),
+        text,
+        { link_preview_options: { is_disabled: true } } as any
+      );
+
       if (user_id) {
         await prisma.notificationLog.updateMany({
           where: { user_id, status: 'queued', type },
