@@ -8,10 +8,11 @@ export const notificationQueue = new Queue('notifications', {
 });
 
 export type NotifyJob = {
-  userTgId: string;
+  tg_id?: string; // optional (worker will resolve from user_id if missing)
+  userId?: string;
   type: string;
   text: string;
-  payload?: unknown;
+  payload?: any;
 };
 
 export async function enqueueNotify(job: NotifyJob, opts?: { delayMs?: number; priority?: number }) {
