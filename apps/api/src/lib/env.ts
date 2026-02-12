@@ -9,5 +9,6 @@ export const env = {
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN ?? '',
   TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET ?? '',
   ADMIN_TG_IDS: (process.env.ADMIN_TG_IDS ?? '').split(',').map(s => s.trim()).filter(Boolean),
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? ''
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? '',
+  OPENAI_MODEL: process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
 };
