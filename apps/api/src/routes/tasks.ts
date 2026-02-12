@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { prisma } from '../lib/db.js';
 import { isActive } from '../lib/subscription.js';
 import { logEvent } from '../lib/events.js';
+import { enqueueNotify } from '../lib/queue.js';
+import { scheduleDueReminders } from '../lib/reminders.js';
 
 const createTaskSchema = z.object({
   title: z.string().min(1),
@@ -64,6 +66,36 @@ export async function taskRoutes(app: FastifyInstance) {
       }
     });
 
+    // Notifications: assignment + due reminders
+    if (task.assigned_to_user_id) {
+      const assignee = await prisma.user.findUnique({ where: { id: task.assigned_to_user_id } });
+      if (assignee) {
+        await prisma.notificationLog.create({
+          data: {
+            user_id: task.assigned_to_user_id,
+            type: 'assigned',
+            status: 'queued',
+            payload: { task_id: task.id, focus_id: focusId }
+          }
+        });
+        await enqueueNotify({
+          userId: task.assigned_to_user_id,
+          tg_id: assignee.tg_id.toString(),
+          type: 'assigned',
+          text: `📌 Новая задача: ${task.title}`,
+          payload: { taskId: task.id }
+        });
+      }
+    }
+    if (task.assigned_to_user_id && task.due_at) {
+      await scheduleDueReminders({
+        taskId: task.id,
+        assignedUserId: task.assigned_to_user_id,
+        dueAt: task.due_at,
+        textBase: `📌 Задача: ${task.title}`
+      });
+    }
+
     await logEvent({ event_name: 'create_task', user_id: req.auth.user.id, focus_id: focusId, props: { task_id: task.id } });
     return { ok: true, task };
   });
@@ -104,6 +136,36 @@ export async function taskRoutes(app: FastifyInstance) {
         assigned_to_user_id: body.assigned_to_user_id ?? undefined
       }
     });
+
+    // Notify on re-assign or due change
+    if (updated.assigned_to_user_id && updated.assigned_to_user_id !== task.assigned_to_user_id) {
+      const assignee = await prisma.user.findUnique({ where: { id: updated.assigned_to_user_id } });
+      if (assignee) {
+        await prisma.notificationLog.create({
+          data: {
+            user_id: updated.assigned_to_user_id,
+            type: 'assigned',
+            status: 'queued',
+            payload: { task_id: updated.id, focus_id: updated.focus_id }
+          }
+        });
+        await enqueueNotify({
+          userId: updated.assigned_to_user_id,
+          tg_id: assignee.tg_id.toString(),
+          type: 'assigned',
+          text: `📌 Тебе назначили задачу: ${updated.title}`,
+          payload: { taskId: updated.id }
+        });
+      }
+    }
+    if (updated.assigned_to_user_id && updated.due_at && (!task.due_at || updated.due_at.getTime() !== task.due_at.getTime())) {
+      await scheduleDueReminders({
+        taskId: updated.id,
+        assignedUserId: updated.assigned_to_user_id,
+        dueAt: updated.due_at,
+        textBase: `📌 Задача: ${updated.title}`
+      });
+    }
 
     return { ok: true, task: updated };
   });
